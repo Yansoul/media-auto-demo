@@ -33,6 +33,7 @@ export default function Home() {
           <Button
             as="a"
             variant="bordered"
+            color="primary"
             href="https://heroui.com"
             target="_blank"
             rel="noopener noreferrer"
