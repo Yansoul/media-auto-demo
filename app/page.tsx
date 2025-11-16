@@ -27,123 +27,70 @@ type Niche = {
   description?: string;
 };
 
+type CategoryData = {
+  [key: string]: Array<{
+    id: string;
+    name: string;
+    value: number;
+  }>;
+};
+
 const steps = ["选择行业", "选择赛道", "输入文案(可选)", "完成配置"];
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedIndustry, setSelectedIndustry] = useState<string>("");
+  const [selectedIndustryName, setSelectedIndustryName] = useState<string>("");
   const [selectedNiche, setSelectedNiche] = useState<string>("");
   const [contentScripts, setContentScripts] = useState<string[]>(["", "", ""]);
   const [industries, setIndustries] = useState<Industry[]>([]);
   const [niches, setNiches] = useState<Niche[]>([]);
+  const [categoryData, setCategoryData] = useState<CategoryData>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // 初始加载行业数据，不显示 loading
     loadIndustries();
   }, []);
 
-
   // 初始加载行业列表（无 loading 状态）
   const loadIndustries = async () => {
-    setError("");
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const mockIndustries: Industry[] = [
-        { id: "life", name: "生活" },
-        { id: "food", name: "美食" },
-        { id: "travel", name: "旅行" },
-        { id: "tech", name: "科技" },
-        { id: "fashion", name: "时尚" },
-        { id: "education", name: "教育" },
-        { id: "finance", name: "财经" },
-        { id: "health", name: "健康" },
-        { id: "entertainment", name: "娱乐" },
-        { id: "sports", name: "体育" },
-      ];
-      setIndustries(mockIndustries);
+      const response = await fetch('/api/categories');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('✅ API 调用成功:', data);
+      setCategoryData(data.niches || {});
+      setIndustries(data.industry || []);
     } catch (err) {
+      console.error('❌ 加载分类失败:', err);
       setError("获取行业数据失败，请稍后重试");
     }
   };
 
-  // 模拟接口：根据行业获取细分赛道
-  const fetchNiches = async (industryId: string) => {
+  // 从缓存数据中加载细分赛道
+  const loadNiches = (industryName: string) => {
     setLoading(true);
     setError("");
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      console.log('=== loadNiches 调试 ===');
+      console.log('传入的 industryName:', industryName);
+      console.log('categoryData 对象:', categoryData);
+      const nicheData = categoryData[industryName] || [];
+      console.log('找到的 nicheData:', nicheData);
 
-      const nicheMap: Record<string, Niche[]> = {
-        life: [
-          { id: "daily", name: "日常生活", description: "记录日常生活点滴" },
-          { id: "home", name: "家居生活", description: "家居装修、收纳整理" },
-          { id: "relationship", name: "人际关系", description: "情感、人际关系建议" },
-          { id: "parenting", name: "育儿经验", description: "育儿知识、经验分享" },
-        ],
-        food: [
-          { id: "cooking", name: "烹饪教程", description: "各类菜品制作教程" },
-          { id: "baking", name: "烘焙甜点", description: "蛋糕、面包烘焙" },
-          { id: "street", name: "街头美食", description: "街头小吃、探店" },
-          { id: "diet", name: "健康饮食", description: "营养搭配、轻食" },
-          { id: "drinks", name: "饮品调制", description: "咖啡、奶茶、调酒" },
-        ],
-        travel: [
-          { id: "domestic", name: "国内游", description: "国内旅游景点攻略" },
-          { id: "abroad", name: "出境游", description: "海外旅行攻略" },
-          { id: "budget", name: "穷游攻略", description: "经济实惠的旅行方式" },
-          { id: "luxury", name: "奢华游", description: "高端旅行体验" },
-          { id: "backpack", name: "背包客", description: "自由行、背包旅行" },
-        ],
-        tech: [
-          { id: "review", name: "产品评测", description: "电子产品评测体验" },
-          { id: "tutorial", name: "技术教程", description: "编程、软件教程" },
-          { id: "news", name: "科技资讯", description: "最新科技动态" },
-          { id: "ai", name: "人工智能", description: "AI技术、应用分享" },
-          { id: "gadget", name: "数码产品", description: "数码产品开箱体验" },
-        ],
-        fashion: [
-          { id: "outfit", name: "穿搭分享", description: "日常穿搭、搭配技巧" },
-          { id: "makeup", name: "美妆教程", description: "化妆技巧、产品测评" },
-          { id: "shopping", name: "购物攻略", description: "购物分享、好物推荐" },
-          { id: "luxury", name: "奢侈品", description: "奢侈品开箱、评测" },
-        ],
-        education: [
-          { id: "language", name: "语言学习", description: "英语学习、外语教程" },
-          { id: "exam", name: "考试攻略", description: "各类考试备考经验" },
-          { id: "skill", name: "技能提升", description: "职业技能、考证经验" },
-          { id: "kid", name: "儿童教育", description: "儿童学习、早教" },
-        ],
-        finance: [
-          { id: "investment", name: "投资理财", description: "股票、基金投资" },
-          { id: "crypto", name: "加密货币", description: "数字货币、区块链" },
-          { id: "saving", name: "省钱攻略", description: "理财、省钱技巧" },
-          { id: "property", name: "房产投资", description: "买房、房产知识" },
-        ],
-        health: [
-          { id: "fitness", name: "健身训练", description: "健身教程、训练计划" },
-          { id: "yoga", name: "瑜伽冥想", description: "瑜伽教程、冥想" },
-          { id: "nutrition", name: "营养搭配", description: "营养知识、食谱" },
-          { id: "mental", name: "心理健康", description: "心理调适、情绪管理" },
-        ],
-        entertainment: [
-          { id: "movie", name: "电影解说", description: "电影推荐、解说" },
-          { id: "music", name: "音乐推荐", description: "音乐分享、推荐" },
-          { id: "celebrity", name: "明星八卦", description: "娱乐圈资讯" },
-          { id: "game", name: "游戏攻略", description: "游戏解说、攻略" },
-        ],
-        sports: [
-          { id: "fitness", name: "健身训练", description: "力量训练、有氧运动" },
-          { id: "basketball", name: "篮球技巧", description: "篮球教学、比赛" },
-          { id: "soccer", name: "足球资讯", description: "足球新闻、战术分析" },
-          { id: "outdoor", name: "户外运动", description: "登山、骑行、徒步" },
-        ],
-      };
-
-      setNiches(nicheMap[industryId] || []);
+      const nicheList: Niche[] = nicheData.map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.name,
+      }));
+      console.log('转换后的 nicheList:', nicheList);
+      setNiches(nicheList);
     } catch (err) {
-      setError("获取赛道数据失败，请稍后重试");
+      setError("获取赛道数据失败");
+      console.error('加载赛道失败:', err);
     } finally {
       setLoading(false);
     }
@@ -155,7 +102,11 @@ export default function Home() {
         setError("请先选择一个行业");
         return;
       }
-      fetchNiches(selectedIndustry);
+      const industry = industries.find(i => i.id === selectedIndustry);
+      if(industry) {
+        setSelectedIndustryName(industry.name);
+        loadNiches(industry.name);
+      }
       setCurrentStep(2);
       setError("");
     } else if (currentStep === 2) {
@@ -223,7 +174,6 @@ export default function Home() {
           <div className="flex justify-center mt-4 space-x-6">
             {steps.map((step, index) => {
               const isActive = currentStep >= index + 1;
-              const isOptional = step.includes("(可选)");
               return (
                 <div key={index} className="flex flex-col items-center">
                   <div
@@ -314,7 +264,7 @@ export default function Home() {
                   <CardHeader className="flex flex-col items-start">
                     <h2 className="text-2xl font-bold">第二步：选择细分赛道</h2>
                     <p className="text-gray-600 dark:text-gray-400 mt-2">
-                      已选择行业：{getIndustryName(selectedIndustry)}
+                      已选择行业：{selectedIndustryName}
                     </p>
                   </CardHeader>
                   <Divider />
@@ -447,7 +397,7 @@ export default function Home() {
                         variant="bordered"
                         size="lg"
                         onPress={handlePreviousStep}
-                        className="w-full sm:w-auto"
+                        className="w-full sm-w-auto"
                       >
                         返回
                       </Button>
@@ -466,7 +416,7 @@ export default function Home() {
                         color="success"
                         size="lg"
                         onPress={handleNextStep}
-                        className="w-full sm:w-auto text-white"
+                        className="w-full sm-w-auto text-white"
                       >
                         继续
                       </Button>
@@ -510,7 +460,7 @@ export default function Home() {
                         variant="bordered"
                         size="lg"
                         onPress={handlePreviousStep}
-                        className="w-full sm:w-auto"
+                        className="w-full sm-w-auto"
                       >
                         返回修改
                       </Button>
@@ -518,7 +468,7 @@ export default function Home() {
                         color="success"
                         size="lg"
                         onPress={handleComplete}
-                        className="w-full sm:w-auto text-white"
+                        className="w-full sm-w-auto text-white"
                       >
                         获取选题建议
                       </Button>
