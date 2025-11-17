@@ -187,14 +187,25 @@ export default function Home() {
       }
 
       const result = await response.json();
-      console.log("API 响应:", result);
+      console.log("📦 API 完整响应:", JSON.stringify(result, null, 2));
 
-      if (result.status === "processing_started" && result.jobId) {
-        setJobId(result.jobId);
+      // 尝试多种可能的响应格式
+      let extractedJobId = result.jobId || result.job_id || result.data?.jobId || result.data?.job_id;
+      let extractedStatus = result.status || result.data?.status;
+
+      console.log("🔍 提取的 jobId:", extractedJobId);
+      console.log("🔍 提取的 status:", extractedStatus);
+
+      if (extractedJobId) {
+        setJobId(extractedJobId);
         // 启动轮询
-        startPolling(result.jobId);
+        startPolling(extractedJobId);
       } else {
-        throw new Error("无效的响应格式");
+        console.error("❌ 响应格式不符合预期:", {
+          receivedKeys: Object.keys(result),
+          fullResponse: result,
+        });
+        throw new Error(`无效的响应格式：缺少 jobId。响应内容: ${JSON.stringify(result)}`);
       }
     } catch (err) {
       console.error("❌ 获取选题建议失败:", err);
