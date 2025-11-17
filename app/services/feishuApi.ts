@@ -17,7 +17,6 @@ export async function getFeishuAccessToken(): Promise<string> {
     app_secret: appSecret,
   };
 
-
   const response = await fetch(
     `${FEISHU_API_BASE}/auth/v3/app_access_token/internal`,
     {
@@ -142,5 +141,32 @@ export async function searchTopicResults(
     throw new Error(`飞书 API 错误: ${data.msg}`);
   }
 
-  return data.data?.items || [];
+  const items = data.data?.items || [];
+
+  // 转换飞书数据格式为代码期望的格式
+  const transformedItems = items.map((item: any) => {
+    const fields = item.fields || {};
+
+    // 辅助函数：提取数组字段的文本值
+    const extractText = (fieldArray: any[]): string => {
+      if (!Array.isArray(fieldArray) || fieldArray.length === 0) return "";
+      return fieldArray[0]?.text || "";
+    };
+
+    return {
+      record_id: item.record_id,
+      fields: {
+        jobId: extractText(fields.jobId),
+        title: extractText(fields["标题"]),
+        match_score: extractText(fields["选题契合度"]),
+        analysis_reason: extractText(fields["分析理由"]),
+        execution_strategy: extractText(fields["执行策略建议"]),
+        video_link:
+          extractText(fields["抖音链接"]) || extractText(fields["视频链接"]),
+        created_at: fields["创建时间"] || item.created_time,
+      },
+    };
+  });
+
+  return transformedItems;
 }

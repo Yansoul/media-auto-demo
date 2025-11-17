@@ -15,7 +15,7 @@ export interface FeishuTopicResult {
   fields: {
     jobId: string;
     title: string;
-    match_score?: number; // 选题契合度
+    match_score?: string; // 选题契合度（格式如 "3/10"）
     analysis_reason?: string; // 分析理由
     execution_strategy?: string; // 执行策略建议
     video_link?: string; // 视频链接
