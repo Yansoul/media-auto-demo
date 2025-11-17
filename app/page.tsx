@@ -15,6 +15,9 @@ import {
   Textarea,
 } from "@heroui/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useFeishuPolling } from "./hooks/useFeishuPolling";
+import { TopicResultCard } from "./components/TopicResultCard";
+import { PollingState } from "./types/topic";
 
 type Industry = {
   id: string;
@@ -50,6 +53,16 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
   const [jobId, setJobId] = useState<string>("");
+
+  // 使用飞书轮询 Hook
+  const {
+    pollingState,
+    topicResults,
+    error: pollingError,
+    attemptCount,
+    startPolling,
+    stopPolling,
+  } = useFeishuPolling();
 
   useEffect(() => {
     loadIndustries();
@@ -178,8 +191,8 @@ export default function Home() {
 
       if (result.status === "processing_started" && result.jobId) {
         setJobId(result.jobId);
-        // 这里可以导航到结果页面或显示成功消息
-        alert(`✅ ${result.message}\n任务ID: ${result.jobId}`);
+        // 启动轮询
+        startPolling(result.jobId);
       } else {
         throw new Error("无效的响应格式");
       }
@@ -582,25 +595,111 @@ export default function Home() {
                       </>
                     )}
 
+                    {/* 轮询状态显示 */}
+                    {pollingState !== PollingState.IDLE && (
+                      <div className="mb-6">
+                        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+                          <CardBody>
+                            <div className="flex items-center gap-3">
+                              <Spinner size="sm" color="primary" />
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-800 dark:text-white">
+                                  {pollingState === PollingState.CHECKING_STATUS && "正在检查任务状态..."}
+                                  {pollingState === PollingState.POLLING_RESULTS && "正在获取选题结果..."}
+                                  {pollingState === PollingState.FINISHED && "✅ 轮询完成！"}
+                                  {pollingState === PollingState.ERROR && "❌ 轮询出错"}
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                  已获取 {topicResults.length} 条选题 · 第 {attemptCount} 次查询
+                                </p>
+                              </div>
+                            </div>
+                            {pollingError && (
+                              <div className="mt-3">
+                                <Chip color="danger" variant="flat" size="sm">
+                                  {pollingError}
+                                </Chip>
+                              </div>
+                            )}
+                          </CardBody>
+                        </Card>
+                      </div>
+                    )}
+
+                    {/* 选题结果展示 */}
+                    {topicResults.length > 0 && (
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+                            📝 选题结果
+                          </h3>
+                          <Chip color="success" variant="flat">
+                            共 {topicResults.length} 条
+                          </Chip>
+                        </div>
+                        <div className="space-y-4">
+                          {topicResults.map((result, index) => (
+                            <TopicResultCard
+                              key={result.record_id}
+                              result={result}
+                              index={index}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex justify-center gap-4">
-                      <Button
-                        variant="bordered"
-                        size="lg"
-                        onPress={handlePreviousStep}
-                        className="w-full sm-w-auto"
-                      >
-                        返回修改
-                      </Button>
-                      <Button
-                        color="success"
-                        size="lg"
-                        onPress={handleComplete}
-                        isLoading={isGenerating}
-                        isDisabled={isGenerating}
-                        className="w-full sm-w-auto text-white"
-                      >
-                        {isGenerating ? "正在生成..." : "获取选题建议"}
-                      </Button>
+                      {pollingState === PollingState.IDLE && (
+                        <>
+                          <Button
+                            variant="bordered"
+                            size="lg"
+                            onPress={handlePreviousStep}
+                            className="w-full sm-w-auto"
+                          >
+                            返回修改
+                          </Button>
+                          <Button
+                            color="success"
+                            size="lg"
+                            onPress={handleComplete}
+                            isLoading={isGenerating}
+                            isDisabled={isGenerating}
+                            className="w-full sm-w-auto text-white"
+                          >
+                            {isGenerating ? "正在生成..." : "获取选题建议"}
+                          </Button>
+                        </>
+                      )}
+                      {pollingState !== PollingState.IDLE && pollingState !== PollingState.FINISHED && (
+                        <Button
+                          color="warning"
+                          variant="flat"
+                          size="lg"
+                          onPress={stopPolling}
+                          className="w-full sm:w-auto"
+                        >
+                          停止轮询
+                        </Button>
+                      )}
+                      {pollingState === PollingState.FINISHED && (
+                        <Button
+                          color="success"
+                          variant="bordered"
+                          size="lg"
+                          onPress={() => {
+                            setCurrentStep(1);
+                            setJobId("");
+                            setSelectedIndustry("");
+                            setSelectedNiche("");
+                            setContentScripts(["", "", ""]);
+                          }}
+                          className="w-full sm:w-auto"
+                        >
+                          开始新的选题
+                        </Button>
+                      )}
                     </div>
                   </CardBody>
                 </>
