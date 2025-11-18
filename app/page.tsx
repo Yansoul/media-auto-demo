@@ -17,8 +17,12 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useFeishuPolling } from "./hooks/useFeishuPolling";
 import { useBeforeUnload } from "./hooks/useBeforeUnload";
+import { useUserPreferences } from "./hooks/useUserPreferences";
+import { useDebouncedEffect } from "./hooks/useDebouncedEffect";
 import { TopicResultCard } from "./components/TopicResultCard";
+import { CachedPreferencesCard } from "./components/CachedPreferencesCard";
 import { PollingState } from "./types/topic";
+import { UserPreferences } from "./types/preferences";
 
 type Industry = {
   id: string;
@@ -54,6 +58,8 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
   const [jobId, setJobId] = useState<string>("");
+  const [cachedData, setCachedData] = useState<UserPreferences | null>(null);
+  const [showCachedCard, setShowCachedCard] = useState(false);
 
   // 使用飞书轮询 Hook
   const {
@@ -65,11 +71,18 @@ export default function Home() {
     stopPolling,
   } = useFeishuPolling();
 
+  // 使用用户偏好设置 Hook
+  const { loadPreferences, savePreferences, clearPreferences } =
+    useUserPreferences();
+
   // 从第3步开始启用离开页面警告
   useBeforeUnload(currentStep >= 3);
 
   useEffect(() => {
     loadIndustries();
+    // 页面加载时检查是否有缓存的用户偏好
+    checkCachedPreferences();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 初始加载行业列表（无 loading 状态）
@@ -87,6 +100,54 @@ export default function Home() {
       // console.error("❌ 加载分类失败:", err);
       setError("获取行业数据失败，请稍后重试");
     }
+  };
+
+  // 检查缓存的用户偏好
+  const checkCachedPreferences = () => {
+    const cached = loadPreferences();
+    if (cached && cached.industryId && cached.nicheId) {
+      setCachedData(cached);
+      setShowCachedCard(true);
+    }
+  };
+
+  // 使用缓存的数据
+  const handleUseCachedData = () => {
+    if (!cachedData) return;
+
+    // 验证缓存的行业是否仍然存在
+    const industry = industries.find((i) => i.id === cachedData.industryId);
+    if (!industry) {
+      console.warn("缓存的行业不存在，清除缓存");
+      clearPreferences();
+      setCachedData(null);
+      setShowCachedCard(false);
+      return;
+    }
+
+    // 设置行业
+    setSelectedIndustry(cachedData.industryId);
+    setSelectedIndustryName(cachedData.industryName);
+
+    // 加载赛道列表
+    loadNiches(cachedData.industryName);
+
+    // 设置赛道
+    setSelectedNiche(cachedData.nicheId);
+
+    // 恢复文案
+    if (cachedData.contentScripts && cachedData.contentScripts.length > 0) {
+      setContentScripts(cachedData.contentScripts);
+    }
+
+    // 隐藏卡片并跳转到第3步
+    setShowCachedCard(false);
+    setCurrentStep(3);
+  };
+
+  // 关闭缓存提示卡片
+  const handleDismissCachedCard = () => {
+    setShowCachedCard(false);
   };
 
   // 从缓存数据中加载细分赛道
@@ -125,6 +186,15 @@ export default function Home() {
       if (industry) {
         setSelectedIndustryName(industry.name);
         loadNiches(industry.name);
+        // 保存行业选择到缓存
+        savePreferences({
+          industryId: selectedIndustry,
+          industryName: industry.name,
+          nicheId: "",
+          nicheName: "",
+          contentScripts: [],
+          timestamp: Date.now(),
+        });
       }
       setCurrentStep(2);
       setError("");
@@ -132,6 +202,18 @@ export default function Home() {
       if (!selectedNiche) {
         setError("请先选择一个赛道");
         return;
+      }
+      const niche = niches.find((n) => n.id === selectedNiche);
+      if (niche) {
+        // 保存赛道选择到缓存
+        savePreferences({
+          industryId: selectedIndustry,
+          industryName: selectedIndustryName,
+          nicheId: selectedNiche,
+          nicheName: niche.name,
+          contentScripts: [],
+          timestamp: Date.now(),
+        });
       }
       setCurrentStep(3);
       setError("");
@@ -147,6 +229,29 @@ export default function Home() {
       setError("");
     }
   };
+
+  // 文案变化时防抖保存到缓存
+  useDebouncedEffect(
+    () => {
+      // 只在已经选择了行业和赛道后才保存文案
+      if (
+        selectedIndustry &&
+        selectedNiche &&
+        contentScripts.some((s) => s.trim())
+      ) {
+        savePreferences({
+          industryId: selectedIndustry,
+          industryName: selectedIndustryName,
+          nicheId: selectedNiche,
+          nicheName: niches.find((n) => n.id === selectedNiche)?.name || "",
+          contentScripts: contentScripts,
+          timestamp: Date.now(),
+        });
+      }
+    },
+    [contentScripts, selectedIndustry, selectedNiche],
+    1000 // 1秒防抖
+  );
 
   const handleComplete = async () => {
     setIsGenerating(true);
@@ -317,6 +422,14 @@ export default function Home() {
                   </CardHeader>
                   <Divider />
                   <CardBody>
+                    {/* 缓存提示卡片 - 非阻塞式 */}
+                    {showCachedCard && cachedData && (
+                      <CachedPreferencesCard
+                        cachedData={cachedData}
+                        onUseCached={handleUseCachedData}
+                        onDismiss={handleDismissCachedCard}
+                      />
+                    )}
                     {error && (
                       <div className="mb-4">
                         <Chip color="danger" variant="solid">
@@ -731,6 +844,8 @@ export default function Home() {
                             setSelectedIndustry("");
                             setSelectedNiche("");
                             setContentScripts(["", "", ""]);
+                            // 清除缓存
+                            clearPreferences();
                           }}
                           className="w-full sm:w-auto"
                         >
