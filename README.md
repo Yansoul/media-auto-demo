@@ -64,7 +64,10 @@ cp .env.example .env.local
 
 ```bash
 # Webhook API 地址（必填）
-NEXT_PUBLIC_WEBHOOK_API_URL=http://localhost:5678  # 本地开发使用 localhost
+# 注意：使用 WEBHOOK_API_URL（不带 NEXT_PUBLIC_ 前缀）
+# 这个地址只在服务端使用，支持 HTTP/HTTPS
+# 前端通过 /api/webhook 代理访问，避免 HTTPS 混合内容问题
+WEBHOOK_API_URL=http://localhost:5678/webhook-test/topic-helper
 
 # TikHub API 配置（可选，用于获取抖音行业分类数据）
 TIKUB_API_KEY=your_tikhub_api_key_here

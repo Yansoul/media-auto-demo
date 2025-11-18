@@ -174,7 +174,7 @@ export default function Home() {
 
       console.log("发送请求数据:", requestData);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_WEBHOOK_API_URL}`, {
+      const response = await fetch("/api/webhook", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
