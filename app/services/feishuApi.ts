@@ -1,4 +1,4 @@
-import { FeishuTaskRecord, FeishuTopicResult } from "../types/topic";
+import { FeishuTaskRecord, FeishuTopicResult } from "../types/topic.types";
 
 // 飞书 API 基础 URL
 const FEISHU_API_BASE = "https://open.feishu.cn/open-apis";

@@ -4,7 +4,7 @@ import {
   FeishuTopicResult,
   UseFeishuPollingReturn,
   PollingConfig,
-} from '../types/topic';
+} from '../types/topic.types';
 
 const DEFAULT_CONFIG: PollingConfig = {
   intervalMs: 5000, // 5秒轮询一次

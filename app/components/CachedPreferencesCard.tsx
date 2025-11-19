@@ -1,6 +1,6 @@
 import { Button } from "@heroui/react";
 import { motion } from "framer-motion";
-import { UserPreferences } from "../types/preferences";
+import { UserPreferences } from "../types/preferences.types";
 
 interface CachedPreferencesCardProps {
   cachedData: UserPreferences;

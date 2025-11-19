@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { UserPreferences, CachedPreferences } from '../types/preferences';
+import { UserPreferences, CachedPreferences } from '../types/preferences.types';
 import { safeGetItem, safeSetItem, safeRemoveItem } from '../utils/localStorage';
 
 const STORAGE_KEY = 'media_auto_user_preferences';

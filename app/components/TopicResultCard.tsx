@@ -2,7 +2,7 @@ import { Card, CardBody, CardHeader, Chip, Divider, Link } from "@heroui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { FeishuTopicResult } from "../types/topic";
+import { FeishuTopicResult } from "../types/topic.types";
 import { useState } from "react";
 
 interface TopicResultCardProps {

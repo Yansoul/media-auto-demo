@@ -1,14 +1,16 @@
 # AI 自媒体选题助手
 
-一个基于 **Next.js 15** 的智能选题系统，帮助自媒体创作者快速获取优质内容选题建议。通过 AI 分析和飞书多维表格集成，实现智能化的选题推荐。
+一个基于 **Next.js 15** 的智能选题系统，采用现代化的企业级架构，帮助自媒体创作者快速获取优质内容选题建议。
 
-## 核心特性
+> 🎉 **v2.0 架构重构完成**：从 866 行单文件重构为清晰的分层架构，大幅提升代码可维护性和可测试性！
+
+## ✨ 核心特性
 
 ### 🎯 智能选题生成
-- 四步式选题配置流程（可选基础版/详细版）
+- 四步式选题配置流程
 - AI 分析行业趋势和爆款视频特征
 - 自动生成多个优质选题建议
-- 智能评分系统评估选题契合度
+- 智能评分系统评估选题契合度（70-100分）
 
 ### ⚡ 实时轮询机制
 - **双阶段智能轮询**：自动检测任务状态并获取结果
@@ -22,20 +24,29 @@
 - **响应式布局**：完美支持桌面和移动设备
 - **流畅动画**：Framer Motion 驱动的交互体验
 
-### 🔧 技术先进
-- **Next.js 15 App Router**：现代 React 框架
-- **TypeScript 5**：严格的类型安全保障
-- **Tailwind CSS**：高效灵活的样式系统
-- **飞书多维表格集成**：强大的后端数据管理
+### 🏗️ 企业级架构
+- **分层设计**：清晰的 Presentation - Application - Service - Utility 层次
+- **模块化**：单个文件不超过 150 行，易于维护
+- **类型安全**：TypeScript 严格模式，完整的类型定义
+- **错误处理**：统一的错误边界和友好的错误提示
+- **日志系统**：结构化日志，区分开发和生产环境
 
-## 快速开始
+### 🔒 健壮性保障
+- **环境变量验证**：启动时自动验证必需配置
+- **API 重试机制**：网络请求失败自动重试
+- **错误边界**：全局和局部错误捕获，防止白屏
+- **缓存策略**：智能缓存用户偏好和 API 响应
+
+---
+
+## 🚀 快速开始
 
 ### 前置要求
 
 - Node.js 18+ 或 20+
 - pnpm 9+（推荐）
 - 飞书开放平台账号和凭证
-- TikHub API 密钥（可选，用于行业分类数据）
+- TikHub API 密钥（用于行业分类数据）
 
 ### 安装步骤
 
@@ -54,30 +65,27 @@ pnpm install
 
 3. **配置环境变量**
 
-复制示例配置文件：
+复制示例配置文件并填入凭证信息：
 
 ```bash
 cp .env.example .env.local
 ```
 
-编辑 `.env.local` 文件，填入你的凭证信息：
+编辑 `.env.local` 文件：
 
 ```bash
 # Webhook API 地址（必填）
-# 注意：使用 WEBHOOK_API_URL（不带 NEXT_PUBLIC_ 前缀）
-# 这个地址只在服务端使用，支持 HTTP/HTTPS
-# 前端通过 /api/webhook 代理访问，避免 HTTPS 混合内容问题
-WEBHOOK_API_URL=http://localhost:5678/webhook-test/topic-helper
+WEBHOOK_API_URL=http://your-backend-url/webhook/topic-helper
 
-# TikHub API 配置（可选，用于获取抖音行业分类数据）
+# TikHub API 配置（必填）
 TIKUB_API_KEY=your_tikhub_api_key_here
 
-# 飞书 API 凭证
+# 飞书 API 凭证（必填）
 FEISHU_ACCESS_KEY_ID=your_feishu_access_key_id_here
 FEISHU_SECRET_ACCESS_KEY=your_feishu_secret_access_key_here
 FEISHU_APP_TOKEN=your_feishu_app_token_here
 
-# 飞书多维表格 ID
+# 飞书多维表格 ID（必填）
 FEISHU_TABLE_ID_TASK=your_task_table_id_here       # 任务状态表
 FEISHU_TABLE_ID_TOPIC=your_topic_table_id_here     # 选题结果表
 ```
@@ -92,332 +100,270 @@ pnpm dev
 
 在浏览器中打开 [http://localhost:3000](http://localhost:3000)
 
-### 生产部署
+---
 
-#### 部署到 Vercel（推荐）
+## 📁 项目架构
 
-1. **连接 GitHub 仓库**
-   - 登录 [Vercel](https://vercel.com)
-   - 导入你的 GitHub 项目
-   - Vercel 会自动检测 Next.js 项目
+### 目录结构
 
-2. **配置环境变量**
-   
-   在 Vercel 项目设置的 "Environment Variables" 中添加以下变量：
-   
-   ```
-   NEXT_PUBLIC_WEBHOOK_API_URL=https://your-aliyun-server.com
-   FEISHU_ACCESS_KEY_ID=your_feishu_access_key_id_here
-   FEISHU_SECRET_ACCESS_KEY=your_feishu_secret_access_key_here
-   FEISHU_APP_TOKEN=your_feishu_app_token_here
-   FEISHU_TABLE_ID_TASK=your_task_table_id_here
-   FEISHU_TABLE_ID_TOPIC=your_topic_table_id_here
-   ```
-   
-   > ⚠️ **注意**：`NEXT_PUBLIC_WEBHOOK_API_URL` 在生产环境中应该设置为你的阿里云服务器地址，而不是 localhost
-
-3. **部署项目**
-   - 点击 "Deploy" 按钮
-   - Vercel 会自动构建和部署你的应用
-   - 部署完成后会生成一个可访问的 URL
-
-#### 手动部署
-
-1. **构建应用**
-
-```bash
-pnpm build
+```
+app/
+├── page.tsx                          # 主页面（19 行，简化为容器）
+├── layout.tsx                        # 根布局（带全局 ErrorBoundary）
+├── providers.tsx                     # HeroUI Provider
+│
+├── (features)/                       # 功能模块
+│   └── topic-wizard/                 # 选题向导功能
+│       ├── TopicWizardContainer.tsx  # 主容器组件
+│       ├── context/                  # 状态管理
+│       │   ├── WizardContext.tsx     # Context 定义
+│       │   └── WizardProvider.tsx    # Provider 实现
+│       └── components/               # 向导组件
+│           ├── WizardStepper.tsx     # 步骤指示器
+│           ├── PollingStatus.tsx     # 轮询状态展示
+│           ├── steps/                # 步骤组件
+│           │   ├── IndustrySelectStep.tsx  # 第1步：行业选择
+│           │   ├── NicheSelectStep.tsx     # 第2步：赛道选择
+│           │   ├── ContentScriptsStep.tsx  # 第3步：文案输入
+│           │   └── SummaryStep.tsx         # 第4步：确认生成
+│           └── TopicResults/         # 结果展示
+│               ├── TopicResultsList.tsx    # 结果列表
+│               ├── TopicResultCard.tsx     # 结果卡片（重构版）
+│               ├── ResultScoreBadge.tsx    # 分数徽章
+│               └── ResultAnalysis.tsx      # 分析理由
+│
+├── components/                       # 通用组件
+│   ├── common/                       # 基础组件
+│   │   ├── ErrorBoundary.tsx         # 错误边界
+│   │   ├── LoadingSpinner.tsx        # 加载状态
+│   │   └── ErrorAlert.tsx            # 错误提示
+│   ├── CachedPreferencesCard.tsx     # 缓存提示卡片
+│   └── ClarityAnalytics.tsx          # 分析统计
+│
+├── hooks/                            # 通用 Hooks
+│   ├── useBeforeUnload.ts            # 页面离开警告
+│   ├── useDebouncedEffect.ts         # 防抖 Effect
+│   ├── useFeishuPolling.ts           # 飞书轮询逻辑
+│   └── useUserPreferences.ts         # 用户偏好管理
+│
+├── services/                         # 服务层
+│   ├── api/                          # API 客户端
+│   │   ├── client.ts                 # 统一 HTTP 客户端
+│   │   ├── categories.api.ts         # 分类 API
+│   │   ├── webhook.api.ts            # Webhook API
+│   │   └── retry.ts                  # 重试机制
+│   └── feishu/                       # 飞书服务
+│       ├── auth.service.ts           # 认证服务
+│       ├── task.service.ts           # 任务状态查询
+│       └── topic.service.ts          # 选题结果查询
+│
+├── lib/                              # 工具库
+│   ├── env.ts                        # 环境变量验证
+│   ├── logger.ts                     # 日志工具
+│   ├── errors.ts                     # 错误处理
+│   └── constants.ts                  # 全局常量
+│
+├── types/                            # 类型定义
+│   ├── api.types.ts                  # API 类型
+│   ├── wizard.types.ts               # 向导类型
+│   ├── preferences.ts                # 偏好类型
+│   └── topic.ts                      # 选题类型
+│
+└── api/                              # API 路由
+    ├── categories/route.ts           # 分类数据接口
+    ├── webhook/route.ts              # Webhook 代理
+    └── feishu/                       # 飞书 API 代理
+        ├── task-status/route.ts      # 任务状态查询
+        └── topic-results/route.ts    # 选题结果查询
 ```
 
-2. **启动生产服务器**
+### 架构设计
 
-```bash
-pnpm start
+```
+┌─────────────────────────────────────────┐
+│          Presentation Layer              │
+│  (Components, Pages, UI)                │
+│  - TopicWizardContainer                 │
+│  - Step Components                       │
+│  - Result Components                     │
+├─────────────────────────────────────────┤
+│         Application Layer                │
+│  (Context, Hooks, Business Logic)       │
+│  - WizardProvider                        │
+│  - useFeishuPolling                      │
+│  - useUserPreferences                    │
+├─────────────────────────────────────────┤
+│          Service Layer                   │
+│  (API Services, External Integrations)  │
+│  - API Client (统一请求封装)            │
+│  - Feishu Services                       │
+│  - Webhook Services                      │
+├─────────────────────────────────────────┤
+│           Utility Layer                  │
+│  (Logger, Errors, Constants, Helpers)   │
+│  - Logger (结构化日志)                   │
+│  - Error Handler (统一错误处理)         │
+│  - Constants (全局常量)                  │
+└─────────────────────────────────────────┘
 ```
 
-> 💡 **提示**：手动部署时，需要在服务器上设置对应的环境变量
+---
 
-## 功能详解
+## 🎓 使用指南
 
-### 选题配置流程
+### 选题生成流程
 
-应用提供两种配置模式：
+1. **第1步：选择行业领域**
+   - 从抖音分类数据库中选择行业
+   - 支持缓存恢复上次选择
 
-#### 基础版（快速上手）
-1. **输入需求描述**：简单描述你的选题需求
-2. **提交任务**：一键提交，等待 AI 生成结果
+2. **第2步：选择细分赛道**
+   - 根据行业选择具体赛道
+   - 实时加载赛道数据
 
-#### 详细版（推荐）
-1. **选择行业领域**：从 抖音分类数据库 中选择行业
-2. **选择细分赛道**：选择该行业下的具体赛道
-3. **上传历史文案（可选）**：输入 3-5 个你的爆款视频文案，帮助 AI 学习你的创作风格
-4. **提交任务**：提交详细的配置信息
+3. **第3步：输入历史文案（可选）**
+   - 输入 3-10 个历史视频文案
+   - AI 学习你的创作风格
+   - 支持动态添加和删除
 
-### 智能轮询系统
+4. **第4步：确认并生成**
+   - 查看配置摘要
+   - 提交任务
+   - 实时查看生成进度
 
-应用会自动轮询飞书多维表格，实时获取任务进度：
+### 选题结果
 
-1. **任务状态检查**：每 3 秒检查一次任务是否完成
-2. **结果数据获取**：任务完成后自动获取选题建议
-3. **增量更新**：新结果实时追加到列表顶部
-4. **自动终止**：任务完成或达到最大轮询次数后自动停止
-
-### 选题结果展示
-
-每个选题结果包含：
+每个选题包含：
 
 - **标题**：简洁明了的选题标题
 - **契合度评分**：70-100 分，带颜色标识
-  - 🟢 90-100 分：极佳匹配
-  - 🔵 80-89 分：良好匹配
-  - 🟡 70-79 分：一般匹配
-- **分析理由**：为什么这个选题适合你
-- **执行策略**：具体的创作方向建议（Markdown 格式）
+  - 🟢 90-100 分：极佳匹配（绿色）
+  - 🔵 80-89 分：良好匹配（蓝色）
+  - 🟡 70-79 分：一般匹配（黄色）
+- **分析理由**：为什么推荐这个选题（可折叠）
+- **执行策略建议**：具体的创作方向（Markdown 格式）
 - **参考视频**：相关的参考案例链接
-- **创建时间**：结果的生成时间
+- **创建时间**：结果生成时间
 
-## 项目结构
+---
 
-```
-media-auto-demo/
-├── app/                          # Next.js App Router 目录
-│   ├── api/                      # API 路由
-│   │   ├── categories/           # 抖音分类数据接口
-│   │   │   └── route.ts
-│   │   ├── feishu/               # 飞书 API 代理接口
-│   │   │   ├── task-status/      # 任务状态查询
-│   │   │   └── topic-results/    # 选题结果查询
-│   │   └── task-status/          # 备用任务状态接口
-│   ├── components/               # React 组件
-│   │   └── TopicResultCard.tsx   # 选题结果卡片
-│   ├── hooks/                    # 自定义 Hooks
-│   │   └── useFeishuPolling.ts   # 飞书轮询逻辑
-│   ├── services/                 # 服务层
-│   │   └── feishuApi.ts          # 飞书 API 封装
-│   ├── types/                    # TypeScript 类型定义
-│   │   └── topic.ts              # 选题相关类型
-│   ├── globals.css               # 全局样式
-│   ├── heroui-plugin.ts          # HeroUI 插件配置
-│   ├── layout.tsx                # 根布局
-│   ├── page.tsx                  # 主页面（核心业务逻辑）
-│   └── providers.tsx             # HeroUI Provider
-├── .env.local.example            # 环境变量示例
-├── CLAUDE.md                     # Claude Code 项目指引
-├── IMPLEMENTATION_SUMMARY.md     # 飞书轮询功能实现总结
-├── README.md                     # 本文档
-├── package.json                  # 项目依赖
-├── tsconfig.json                 # TypeScript 配置
-├── tailwind.config.ts            # Tailwind 配置
-└── postcss.config.mjs            # PostCSS 配置
-```
+## 🛠️ 开发指南
 
-## 配置说明
+### 技术栈
 
-### 飞书多维表格配置
-
-应用需要两个飞书多维表格：
-
-#### 1. 任务状态表 (`FEISHU_TABLE_ID_TASK`)
-
-用于跟踪选题任务的执行状态：
-
-| 字段名      | 类型   | 说明                                                         |
-| ----------- | ------ | ------------------------------------------------------------ |
-| Job ID      | 文本   | 任务唯一标识符                                               |
-| Status      | 单选   | 任务状态（processing / finished）                            |
-| Created At  | 日期   | 任务创建时间                                                 |
-| Updated At  | 日期   | 任务更新时间                                                 |
-
-#### 2. 选题结果表 (`FEISHU_TABLE_ID_TOPIC`)
-
-用于存储 AI 生成的选题建议：
-
-| 字段名               | 类型   | 说明                                   |
-| -------------------- | ------ | -------------------------------------- |
-| Job ID               | 文本   | 关联的任务 ID                          |
-| 标题                 | 文本   | 选题标题                               |
-| 契合度评分           | 数字   | 70-100 的评分                          |
-| 分析理由             | 文本   | 为什么推荐这个选题                     |
-| 执行策略             | 文本   | Markdown 格式的创作建议                |
-| 参考视频链接         | 文本   | 参考案例的链接（逗号分隔）             |
-| 创建时间             | 日期   | 记录创建时间                           |
-
-### TikHub API 配置（可选）
-
-如果你想要启用行业分类选择功能：
-
-1. 访问 [TikHub.io](https://tikhub.io) 注册账号
-2. 获取 API 密钥
-3. 在环境变量中添加 `TIKUB_API_KEY`
-
-如果没有配置 TikHub API，应用仍可使用基础模式运行。
-
-## API 接口
-
-### 内部 API 路由
-
-#### `GET /api/categories`
-
-获取抖音内容标签分类数据。
-
-**缓存策略**：使用 Next.js `unstable_cache` 缓存 24 小时
-
-**返回示例**：
-
-```json
-{
-  "categories": [
-    {
-      "id": "1",
-      "name": "美食",
-      "subcategories": [
-        { "id": "1-1", "name": "探店" },
-        { "id": "1-2", "name": "食谱" }
-      ]
-    }
-  ]
-}
-```
-
-#### `GET /api/feishu/task-status?jobId={jobId}`
-
-查询任务状态。
-
-**参数**：
-- `jobId` (string): 任务 ID
-
-**返回值**：
-- `jobId`: 任务 ID
-- `status`: 任务状态（`processing` | `finished`）
-
-#### `GET /api/feishu/topic-results?jobId={jobId}`
-
-获取选题结果列表。
-
-**参数**：
-- `jobId` (string): 任务 ID
-
-**返回示例**：
-
-```json
-{
-  "topics": [
-    {
-      "jobId": "xxx",
-      "标题": "如何在家做正宗重庆火锅",
-      "契合度评分": 95,
-      "分析理由": "这个选题符合当前季节热点...",
-      "执行策略": "1. 开头展示火锅底料\n2. 详细讲解调料配比",
-      "参考视频链接": "https://example.com/video1, https://example.com/video2",
-      "创建时间": "2025-01-18T10:00:00Z"
-    }
-  ]
-}
-```
-
-### 外部 API
-
-#### 任务提交 Webhook
-
-任务提交到：`http://localhost:5678/webhook-test/topic-helper`
-
-**请求方法**：POST
-
-**请求体**：
-
-```json
-{
-  "jobId": "唯一任务 ID",
-  "industry": "行业名称（可选）",
-  "niche": "细分赛道（可选）",
-  "requirements": "详细需求描述",
-  "pastScripts": ["历史文案 1", "历史文案 2"]  // 可选
-}
-```
-
-**响应**：
-
-```json
-{
-  "success": true,
-  "message": "任务已提交"
-}
-```
-
-## 开发指南
+- **前端框架**: Next.js 15 (App Router)
+- **UI 组件**: HeroUI 2.8
+- **状态管理**: React Context API
+- **动画**: Framer Motion 12
+- **样式**: Tailwind CSS 4
+- **语言**: TypeScript 5
+- **包管理**: pnpm 9
 
 ### 代码规范
 
-- 使用 **TypeScript** 严格模式
-- 优先使用 **HeroUI 组件**构建 UI
-- 使用 **Tailwind CSS** 自定义样式（原子化类名）
-- 自定义 Hook 放在 `app/hooks/` 目录下
-- 服务层代码放在 `app/services/` 目录下
-- 组件文件以 `.tsx` 结尾
+1. **组件开发**
+   - 单个文件不超过 150 行
+   - 使用 `memo` 优化性能
+   - Props 类型必须定义
 
-### 使用 HeroUI 组件
+2. **状态管理**
+   - 使用 Context 避免 props drilling
+   - 使用 `useMemo` 和 `useCallback` 优化
 
-项目中使用 HeroUI 作为 UI 组件库：
+3. **错误处理**
+   - 所有 API 调用必须有错误处理
+   - 使用统一的 `logger` 记录日志
+   - 使用 `normalizeError` 转换错误
 
-```tsx
-import { Button, Card, Input, Select, Spinner } from "@heroui/react";
+4. **类型安全**
+   - 不使用 `any` 类型
+   - 所有函数参数和返回值必须有类型
+   - 使用接口定义复杂对象
 
-// 示例
-<Button color="primary" variant="solid">
-  提交任务
-</Button>
+### 添加新功能
 
-<Card className="p-6">
-  <h3 className="text-xl font-bold">选题结果</h3>
-</Card>
-```
+1. 在 `app/(features)/` 下创建新的功能模块
+2. 定义类型在 `app/types/`
+3. 创建 API 服务在 `app/services/api/`
+4. 添加常量到 `app/lib/constants.ts`
 
-更多组件和用法参考 [HeroUI 官方文档](https://heroui.com/docs/introduction)
+### 调试
 
-### 自定义 Hook
-
-使用 `useFeishuPolling` Hook 实现轮询：
-
-```typescript
-import { useFeishuPolling, TopicResult } from "@/app/hooks/useFeishuPolling";
-
-const { isPolling, pollingState, results, error } = useFeishuPolling(jobId);
-```
-
-### 类型安全
-
-项目中使用 TypeScript 严格模式，所有类型定义在 `app/types/`：
+使用统一的日志系统：
 
 ```typescript
-import { TopicResult, PollingState } from "@/app/types/topic";
+import { logger } from '@/app/lib/logger';
 
-const result: TopicResult = {
-  jobId: "xxx",
-  "标题": "选题标题",
-  "契合度评分": 95,
-  // ...
-};
+logger.debug('调试信息', { data });
+logger.info('操作成功', { result });
+logger.warn('警告', { context });
+logger.error('错误', error, { context });
 ```
 
-### 环境变量
+---
 
-使用 `process.env` 访问环境变量：
+## 📊 性能优化
 
-```typescript
-const apiKey = process.env.TIKUB_API_KEY;
-```
+### 已实施的优化
 
-注意：
-- 客户端组件中只能访问 `NEXT_PUBLIC_` 前缀的变量
-- API 路由中可以直接访问所有环境变量
+1. **组件优化**
+   - 所有步骤组件使用 `React.memo`
+   - 结果卡片使用 `memo` 避免重渲染
+   - 计算密集型操作使用 `useMemo`
 
-## 部署建议
+2. **代码分割**
+   - 使用 `dynamic` 动态导入向导容器
+   - 避免首屏加载过大的 bundle
+
+3. **请求优化**
+   - API 客户端支持自动重试
+   - 飞书 Token 缓存（提前 5 分钟过期）
+   - 分类数据缓存 24 小时
+
+4. **缓存策略**
+   - 用户偏好本地缓存
+   - API 响应缓存
+   - 智能缓存版本控制
+
+---
+
+## 🔒 安全性
+
+### 环境变量管理
+
+- 所有敏感信息存储在环境变量中
+- 启动时自动验证必需的环境变量
+- 不在客户端暴露敏感信息
+
+### API 安全
+
+- 所有外部 API 请求通过服务端代理
+- Webhook URL 只在服务端使用
+- 飞书凭证安全存储
+
+### 输入验证
+
+- 表单字段长度限制（文案最大 2000 字符）
+- XSS 防护（React 自动转义）
+- 用户输入清理和验证
+
+---
+
+## 📚 文档资源
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - 详细的架构文档
+- **[CLAUDE.md](./CLAUDE.md)** - Claude Code 项目开发指南
+- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - 飞书轮询功能实现总结
+
+---
+
+## 🚢 部署
 
 ### Vercel（推荐）
 
 1. 将代码推送到 GitHub
-2. 在 Vercel 导入项目
-3. 配置环境变量（所有 `.env.local` 中的变量）
+2. 在 [Vercel](https://vercel.com) 导入项目
+3. 配置环境变量
 4. 部署
 
 **优势**：
@@ -443,91 +389,100 @@ pnpm start
 **使用 PM2（生产环境）**：
 
 ```bash
-pnpm add -g pm2
+npm install -g pm2
 pm2 start pnpm -- start --name media-auto-demo
 ```
 
-### Docker（可选）
+---
 
-```dockerfile
-FROM node:20-alpine
+## 🎯 项目亮点
 
-WORKDIR /app
+### ✅ 架构设计
 
-COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm
-RUN pnpm install --frozen-lockfile
+- **模块化设计**：低耦合高内聚
+- **分层架构**：职责清晰
+- **类型安全**：完整的 TypeScript 支持
+- **可测试性**：业务逻辑与 UI 分离
 
-COPY . .
-RUN pnpm build
+### ✅ 代码质量
 
-EXPOSE 3000
+- **单一职责**：每个文件不超过 150 行
+- **代码复用**：通用组件和 Hooks
+- **命名规范**：清晰易懂的命名
+- **注释完整**：关键逻辑都有注释
 
-CMD ["pnpm", "start"]
-```
+### ✅ 用户体验
 
-构建和运行：
+- **流畅动画**：Framer Motion 驱动
+- **实时反馈**：轮询进度可视化
+- **友好提示**：清晰的错误消息
+- **智能缓存**：恢复上次配置
 
-```bash
-docker build -t media-auto-demo .
-docker run -p 3000:3000 --env-file .env.local media-auto-demo
-```
+### ✅ 健壮性
 
-## 文档资源
+- **错误边界**：全局和局部错误捕获
+- **重试机制**：API 请求自动重试
+- **超时控制**：防止无限轮询
+- **资源清理**：避免内存泄漏
 
--  **[CLAUDE.md](./CLAUDE.md)**  - Claude Code 项目开发指南，包含技术栈细节和开发规范
--  **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)**  - 飞书轮询功能实现详细总结
+---
 
-## 贡献指南
+## 📈 更新日志
 
-我们欢迎各种形式的贡献：
+### v2.0.0 (2025-11-19) - 架构重构
 
-1. **Fork 项目**
-2. **创建功能分支** (`git checkout -b feature/amazing-feature`)
-3. **提交更改** (`git commit -m 'Add amazing feature'`)
-4. **推送到分支** (`git push origin feature/amazing-feature`)
-5. **创建 Pull Request**
+- ✅ 将 866 行的 page.tsx 重构为 19 行
+- ✅ 引入分层架构和模块化设计
+- ✅ 添加统一的错误处理和日志系统
+- ✅ 实现 Context 状态管理
+- ✅ 组件拆分和性能优化
+- ✅ 添加 ErrorBoundary 错误边界
+- ✅ 创建详细的架构文档
 
-## 许可证
+### v1.0.0 (2025-01-18) - 初始版本
 
-MIT
+- ✅ 基础选题向导功能
+- ✅ 飞书轮询系统
+- ✅ 实时结果展示
+- ✅ 用户偏好缓存
 
-## 支持
+---
+
+## 🤝 贡献指南
+
+我们欢迎各种形式的贡献！
+
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
+3. 提交更改 (`git commit -m 'Add amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 开启 Pull Request
+
+### 贡献要求
+
+- 遵循项目的代码规范
+- 添加必要的注释和文档
+- 确保所有 lint 检查通过
+- 测试新功能正常工作
+
+---
+
+## 📄 许可证
+
+MIT License
+
+---
+
+## 💬 支持
 
 如有问题或建议，请：
 
-- 查看现有文档（CLAUDE.md 和 IMPLEMENTATION_SUMMARY.md）
+- 查看 [架构文档](./ARCHITECTURE.md)
 - 提交 GitHub Issue
 - 联系开发团队
 
 ---
 
-## 项目亮点
-
-### ✅ 优秀的代码质量
-- TypeScript 严格模式，完整的类型安全
-- 清晰的分层架构（Service → API → Hook → UI）
-- 通过 ESLint 检查，规范的代码风格
-- 详细的注释和文档
-
-### ✅ 出色的用户体验
-- 流畅的页面切换动画（Framer Motion）
-- 实时进度反馈和状态展示
-- 清晰的错误提示和引导
-- 深色模式自动适配
-
-### ✅ 健壮的错误处理
-- API 调用失败自动重试
-- 轮询超时自动终止
-- 友好的错误提示界面
-- 资源自动清理，避免内存泄漏
-
-### ✅ 良好的可维护性
-- 模块化设计，低耦合高内聚
-- 可配置的轮询参数
-- 完善的环境变量管理
-- 详尽的开发和部署文档
-
----
-
 **开始你的智能选题之旅吧！🚀**
+
+> 💡 **提示**：建议先阅读 [ARCHITECTURE.md](./ARCHITECTURE.md) 了解项目架构设计。
